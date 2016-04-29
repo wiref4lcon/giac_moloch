@@ -23,21 +23,32 @@ node 'deb_moloch_es' {
    recurse => true,
  }
 
+  #-This folders will hold a clean ES database with user admin pass admin
+  file {'/var/moloch_es':
+    ensure  => directory,
+    owner   => 'root',
+    group   => 'root',
+    mode    => '0644',
+    source  => 'puppet:///modules/docker/moloch/data',
+    recurse => true,
+    replace => false,
+  }
+
  #-Once the image has been created, run the "moloch_es" container
  docker::run {'moloch_es':
    image           => 'moloch_es',
    ports           => ['9200:9200', '9300:9300'],
    #env            => ['NODE_TLS_REJECT_UNAUTHORIZED=0'],
-   hostname        => 'moloch_es',
+   #hostname        => 'moloch_es',
    restart_service => true,
-   volumes         => ['/etc/moloch_es:/data/moloch/etc', '/var/moloch_es:/data/moloch/data', '/etc/hosts:/etc/hosts'],
+   volumes         => ['/etc/moloch_es:/data/moloch/etc', '/var/moloch_es:/data/moloch/data'],
    net             => bridge,
   }
 
 #################################################################################################################################
 #Viewer - Section-############################################################################################################### 
 
- #-Create the image "moloch_viewer" from the .tgz file that holds Moloch's compiled binaries
+#-Create the image "moloch_viewer" from the .tgz file that holds Moloch's compiled binaries
  docker::image { 'moloch_viewer':
    docker_file => '/moloch_viewer/moloch_viewer.tgz',
    subscribe   => File['/moloch_viewer'],
